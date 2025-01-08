@@ -4,6 +4,7 @@ const siteMetadata = {
   headerTitle: "Reme\'s Blog",
   language: 'zh-cn',
   theme: 'system', // system, dark or light
+  description: "Reme's Blog",
   siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
   siteRepo: 'https://github.com/timlrx/tailwind-nextjs-starter-blog',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
@@ -98,4 +99,4 @@ const siteMetadata = {
   },
 }
 
-export default siteMetadata
+module.exports = siteMetadata

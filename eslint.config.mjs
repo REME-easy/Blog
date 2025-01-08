@@ -48,6 +48,7 @@ export default [
     },
 
     rules: {
+      quotes: ['error', 'single'],
       'prettier/prettier': 'error',
       'react/react-in-jsx-scope': 'off',
 

@@ -1,34 +1,33 @@
-"use client";
+'use client'
 
-import { useTheme } from "next-themes";
-import GiscusComponent, { BooleanString, InputPosition, Mapping } from "@giscus/react";
-import siteMetadata from "@/data/siteMetadata";
+import { useTheme } from 'next-themes'
+import GiscusComponent, { BooleanString, InputPosition, Mapping } from '@giscus/react'
+import siteMetadata from '@/data/siteMetadata'
 
 interface GiscusConfigs {
-  themeURL: string;
-  theme: string;
-  darkTheme: string;
-  mapping: Mapping;
-  repo: `${string}/${string}`;
-  repositoryId: string;
-  category: string;
-  categoryId: string;
-  reactions: BooleanString;
-  metadata: BooleanString;
-  inputPosition: InputPosition;
-  lang: string;
+  themeURL: string
+  theme: string
+  darkTheme: string
+  mapping: Mapping
+  repo: `${string}/${string}`
+  repositoryId: string
+  category: string
+  categoryId: string
+  reactions: BooleanString
+  metadata: BooleanString
+  inputPosition: InputPosition
+  lang: string
 }
 
-
 interface CommentsProps {
-  className?: string;
-  configs?: Partial<GiscusConfigs>;
+  className?: string
+  configs?: Partial<GiscusConfigs>
 }
 
 export default function Comments(props: CommentsProps) {
-  const { configs, className } = props;
+  const { configs, className } = props
 
-  const defaultConfigs = siteMetadata.comments.giscusConfig as GiscusConfigs;
+  const defaultConfigs = siteMetadata.comments.giscusConfig as GiscusConfigs
   const {
     themeURL,
     theme,
@@ -42,11 +41,15 @@ export default function Comments(props: CommentsProps) {
     inputPosition,
     lang,
     mapping,
-  } = { ...defaultConfigs, ...configs };
+  } = { ...defaultConfigs, ...configs }
 
-  const { theme: siteTheme, resolvedTheme } = useTheme();
+  const { theme: siteTheme, resolvedTheme } = useTheme()
   const commentsTheme =
-    themeURL === "" ? (siteTheme === "dark" || resolvedTheme === "dark" ? darkTheme : theme) : themeURL;
+    themeURL === ''
+      ? siteTheme === 'dark' || resolvedTheme === 'dark'
+        ? darkTheme
+        : theme
+      : themeURL
 
   return (
     <div id="comments" className={className}>
@@ -65,5 +68,5 @@ export default function Comments(props: CommentsProps) {
         loading="lazy"
       />
     </div>
-  );
+  )
 }
