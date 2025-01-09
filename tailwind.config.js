@@ -59,8 +59,8 @@ module.exports = {
               fontWeight: '600',
             },
             code: {
-              color: '#7aa2f7',
-              backgroundColor: '#24283b',
+              color: '#4c6ef5',
+              backgroundColor: '#f0f4ff',
               paddingLeft: '2px',
               paddingRight: '2px',
               paddingTop: '2px',
@@ -85,6 +85,10 @@ module.exports = {
               code: {
                 backgroundColor: '#24283b',
               },
+            },
+            code: {
+              color: '#7aa2f7',
+              backgroundColor: '#24283b',
             },
             'h1,h2,h3,h4,h5,h6': {
               color: theme('colors.gray.100'),
