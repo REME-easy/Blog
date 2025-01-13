@@ -37,6 +37,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
       - run: pnpm install
+      - name: Set environment variables
+        run: |
+          echo "NEXT_PUBLIC_GISCUS_CATEGORY_ID=${{ secrets.NEXT_PUBLIC_GISCUS_CATEGORY_ID }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GISCUS_REPOSITORY_ID=${{ secrets.NEXT_PUBLIC_GISCUS_REPOSITORY_ID }}" >> $GITHUB_ENV
+          echo "BASE_PATH=${{ env.BASE_PATH }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GISCUS_REPO=${{ env.NEXT_PUBLIC_GISCUS_REPO }}" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GISCUS_CATEGORY=${{ env.NEXT_PUBLIC_GISCUS_CATEGORY }}" >> $GITHUB_ENV
       - run: pnpm build
         env:
           EXPORT: 1

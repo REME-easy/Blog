@@ -86,6 +86,9 @@ module.exports = {
                 backgroundColor: '#24283b',
               },
             },
+            pre: {
+              backgroundColor: '#24283b',
+            },
             code: {
               color: '#7aa2f7',
               backgroundColor: '#24283b',

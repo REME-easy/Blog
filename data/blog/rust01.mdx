@@ -1,8 +1,135 @@
 ---
-title: "Rust开发01 - WGPU学习记录"
-date: "2025-01-09"
-draft: true
+title: "Rust游戏引擎开发01 - WGPU学习记录"
+date: "2025-01-10"
+draft: false
 tags: ["rust", "wgpu", "编程"]
 summary: "Rust游戏引擎开发"
 ---
 
+> [wgpu](https://github.com/gfx-rs/wgpu) 是基于[WebGPU API 规范](https://gpuweb.github.io/gpuweb/)的、跨平台的、安全的、纯 Rust 图形 API。它是 Firefox、Servo 和 Deno 中 WebGPU 整合的核心。
+
+
+要制作一个游戏引擎，首先需要选择一个图形API。由于选择`Rust`作为开发语言，所以理所当然的使用`wgpu`。
+
+基础的学习可以参考[learn-wgpu-zh](https://jinleili.github.io/learn-wgpu-zh/)。
+
+本文编写时使用的版本：
+```Toml
+wgpu = "23.0.1"
+winit = "0.30.5"
+```
+
+# 思路
+
+自制游戏引擎需要的功能如下：
+* 内置批次渲染
+* 着色器
+* 相机
+* 基本图形渲染
+* 文字
+
+为了省力，文字渲染将使用[cosmic-text](https://crates.io/crates/cosmic-text)库。于是渲染命令的类型分为*mesh和文字*两种。
+
+和大多数游戏引擎的思路一样，有一个`Application`主类，有`update()`和`draw()`方法。`update`用于处理游戏的逻辑循环，`draw`用于渲染循环。
+
+### 渲染
+
+渲染的基本思路是，在引擎类的`draw()`之前，进行一次`begin_frame`，结束以后进行一次`end_frame`，将`draw`中收集的渲染数据全部提交到gpu里进行绘制。
+
+**批次渲染**可以提高相同图片的渲染命令的性能。为了确保这一点，可以通过使用**图集(atlas)**或者将相同图片的渲染放到一起的合理分配实现。
+
+> **图集**是一张大图，其中有各种小图，渲染时可以通过参数获得小图的位置等信息进行渲染，而这图集中的小图视为同一个图片的渲染命令。
+
+相同参数（例如使用的着色器、混合模式、图片、层级）的渲染命令放在一组中进行渲染。
+
+**文字**渲染是另一种思路，所以要分开。
+
+# 概念理解
+
+`wgpu`包括很多与`opengl`和`vulkan`类似的概念，但也有所不同。下面记录一些个人的理解。
+
+### Buffer
+
+**缓冲区**。用于存放内存数据的结构。例如存放`vertex`（顶点）和`index`（索引）。
+
+### Pipeline
+
+**管道**。输入顶点缓冲区（`vertex buffer`）输出目标颜色。类似于（包括）着色器，但有更完善的参数。
+
+相当于描述
+
+### Bind Group
+
+**绑定组**。表示管道如何访问一组资源。每一张图片似乎都需要创建一个绑定组。
+
+通过以下代码可以很直观的看出其中的关系：
+
+```Rust
+    // 设置管道
+    render_pass.set_pipeline(&self.render_pipeline);
+    // 设置绑定组0，见shader
+    render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+    // 设置绑定组1
+    render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+    // 设置顶点缓冲区0，对于每个顶点即为vs_main传入的参数0
+    render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+    // 设置顶点缓冲区1，对于每个顶点即为vs_main传入的参数1
+    render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+    // 设置索引缓冲区，节省渲染次数
+    render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+    render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
+```
+
+```Wgsl
+// 顶点着色器
+
+struct Camera {
+    view_proj: mat4x4f,
+}
+@group(1) @binding(0)
+var<uniform> camera: Camera;
+
+// ...省略
+
+@vertex
+fn vs_main(
+    model: VertexInput,
+    instance: InstanceInput,
+) -> VertexOutput {
+// ...省略
+}
+
+// 片元着色器
+
+@group(0) @binding(0)
+var t_diffuse: texture_2d<f32>;
+@group(0)@binding(1)
+var s_diffuse: sampler;
+
+@fragment
+fn fs_main(in: VertexOutput) -> @location(0) vec4f {
+// ...省略
+}
+```
+
+# 实现
+
+渲染相关的内容都放入`GraphicsContext`里。
+
+```rust
+pub struct GraphicsContext {
+    pub wgpu: WgpuContext,
+
+    pub pipeline_cache: PipelineCache,
+    pub bind_group_cache: BindGroupCache,
+    pub texture_cache: TextureCache,
+    pub mesh_cache: MeshCache,
+    pub buffer_arena: GrowingBufferArena,
+}
+```
+
+这里放了`wgpu`相关的内容，以及各种*cache*，用于存放各种类型的数据。
+
+# 结束语
+
+随着引擎不断开发，这里也会逐渐完善。那么下一篇再见。
